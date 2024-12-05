@@ -50,7 +50,7 @@ export const createLeague = async (req, res) => {
     const { user_id, leagueName, start_round } = req.body;
 
     try {
-        // Step 1: Prepare the SQL query to insert the league into the private_fantasy_league table
+        // Step 1: Prepare the SQL query to insert the league into the fantasy_private_leagues table
         const insertQuery = `
             INSERT INTO fantasy_private_leagues (league_name, start_round, owner_id, league_badge)
             VALUES ($1, $2, $3, $4)
@@ -59,14 +59,13 @@ export const createLeague = async (req, res) => {
         // Step 2: Execute the query with the provided data
         await db.query(insertQuery, [leagueName, start_round, user_id, 'none']);
         
-        // Step 3: Send the success response
-        res.status(201).json({ message: 'League created successfully' });
+        // Step 3: Send the same leagueName back in the response
+        res.status(201).json({ leagueName });
     } catch (err) {
         console.error('Error creating league:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
-
 
 
 
