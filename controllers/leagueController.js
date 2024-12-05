@@ -125,7 +125,7 @@ export const fetchPrivateLeagueData = async (req, res) => {
         }
 
         const league_id = leagueResult.rows[0].league_id;
-        const league_code = leagueResult.rows[0].league_code; // Get the league_code
+        let league_code = leagueResult.rows[0].league_code; // Get the league_code
 
         league_code = parseInt(league_code, 10);
 
