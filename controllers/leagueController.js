@@ -84,8 +84,8 @@ export const joinLeague = async (req, res) => {
     const { user_id, league_code } = req.body;
 
     try {
-        // Step 1: Check if the league_code exists in the fantasy_private_leagues table
-        const leagueQuery = 'SELECT league_id FROM fantasy_private_leagues WHERE league_code = $1';
+        // Step 1: Check if the league_code exists in the fantasy_private_leagues table and fetch league_name
+        const leagueQuery = 'SELECT league_id, league_name FROM fantasy_private_leagues WHERE league_code = $1';
         const leagueResult = await db.query(leagueQuery, [league_code]);
 
         // If no league with the given code is found
@@ -93,7 +93,7 @@ export const joinLeague = async (req, res) => {
             return res.status(404).json({ error: 'League not found' });
         }
 
-        const league_id = leagueResult.rows[0].league_id;
+        const { league_id, league_name } = leagueResult.rows[0];
 
         // Step 2: Check if the user is already part of the league
         const memberQuery = 'SELECT * FROM fantasy_league_members WHERE user_id = $1 AND league_id = $2';
@@ -108,13 +108,14 @@ export const joinLeague = async (req, res) => {
         const insertQuery = 'INSERT INTO fantasy_league_members (user_id, league_id) VALUES ($1, $2)';
         await db.query(insertQuery, [user_id, league_id]);
 
-        // Step 4: Return success message
-        res.status(200).json({ message: 'Successfully joined the league' });
+        // Step 4: Return success message with league_name
+        res.status(200).json({ leagueName: league_name });
     } catch (err) {
         console.error('Error joining league:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
 
 
 
