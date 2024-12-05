@@ -19,18 +19,17 @@ export const fetchTeam = async (req, res) => {
         if (result.rows.length > 0) {
             const team = result.rows[0];
 
-            // Filter player lineup to include only the desired fields
+            // Filter player lineup to include only the desired fields, convert price to a double, and extract first name part
             const filteredPlayerLineup = team.player_lineup.map(player => ({
                 shirtName: player.club,
-                price: player.price,
-                name: player.lastName,
+                price: parseFloat(player.price), // Convert price to a double
+                name: player.lastName.split(' ')[0], // Extract only the first part of the lastName
                 position: player.position,
             }));
 
             // Send the structured response to the client
             res.status(200).json({
                 team: {
-                    formation: team.formation,
                     playerLineup: filteredPlayerLineup,
                     totalBudget: team.total_budget,
                     points: team.points,
@@ -52,3 +51,6 @@ export const fetchTeam = async (req, res) => {
         });
     }
 };
+
+
+

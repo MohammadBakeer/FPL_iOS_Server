@@ -110,7 +110,7 @@ export const joinLeague = async (req, res) => {
 
 
 
-export const fetchPrivateLeague = async (req, res) => {
+export const fetchPrivateLeagueData = async (req, res) => {
     const { user_id, leagueName } = req.body;
 
     try {
@@ -229,3 +229,48 @@ export const deleteLeague = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
+
+
+
+
+export const fetchPrivateLeagues = async (req, res) => {
+    try {
+        const { user_id } = req.body;
+
+        // Check if user_id is provided
+        if (!user_id) {
+            return res.status(400).json({ error: "User ID is required" });
+        }
+
+        // Step 1: Query `fantasy_league_members` table to get all `league_id` for the user
+        const leagueIdsQuery = `SELECT league_id FROM fantasy_league_members WHERE user_id = $1`;
+        const leagueIdsResult = await db.query(leagueIdsQuery, [user_id]);
+
+        // Extract league IDs from the query result
+        const leagueIds = leagueIdsResult.rows.map(row => row.league_id);
+
+        if (leagueIds.length === 0) {
+            return res.status(200).json({ leagueNames: [] }); // Return empty array if no leagues are found
+        }
+
+        // Step 2: Query `fantasy_private_leagues` table to get all `league_name` for the `league_id`
+        const leaguesQuery = `
+            SELECT league_name 
+            FROM fantasy_private_leagues 
+            WHERE league_id = ANY($1)
+        `;
+        const leaguesResult = await db.query(leaguesQuery, [leagueIds]);
+
+        // Extract league names from the query result
+        const leagueNames = leaguesResult.rows.map(row => row.league_name);
+
+        // Step 3: Return the league names
+        return res.status(200).json({ leagueNames });
+    } catch (error) {
+        console.error("Error fetching private leagues:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+
