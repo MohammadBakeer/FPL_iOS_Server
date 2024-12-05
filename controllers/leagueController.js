@@ -50,22 +50,32 @@ export const createLeague = async (req, res) => {
     const { user_id, leagueName, start_round } = req.body;
 
     try {
-        // Step 1: Prepare the SQL query to insert the league into the fantasy_private_leagues table
-        const insertQuery = `
+        // Step 1: Insert into the fantasy_private_leagues table and return the league_id
+        const insertLeagueQuery = `
             INSERT INTO fantasy_private_leagues (league_name, start_round, owner_id, league_badge)
             VALUES ($1, $2, $3, $4)
+            RETURNING league_id
         `;
         
-        // Step 2: Execute the query with the provided data
-        await db.query(insertQuery, [leagueName, start_round, user_id, 'none']);
-        
-        // Step 3: Send the same leagueName back in the response
-        res.status(201).json({ leagueName });
+        const leagueResult = await db.query(insertLeagueQuery, [leagueName, start_round, user_id, 'none']);
+        const league_id = leagueResult.rows[0].league_id;
+
+        // Step 2: Insert into the fantasy_league_members table with the league_id and user_id
+        const insertMemberQuery = `
+            INSERT INTO fantasy_league_members (league_id, user_id)
+            VALUES ($1, $2)
+        `;
+
+        await db.query(insertMemberQuery, [league_id, user_id]);
+
+        // Step 3: Send the leagueName and league_id back in the response
+        res.status(201).json({ leagueName, league_id });
     } catch (err) {
         console.error('Error creating league:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
 
 
 
@@ -111,8 +121,7 @@ export const joinLeague = async (req, res) => {
 
 export const fetchPrivateLeagueData = async (req, res) => {
     const { leagueName } = req.body;
-    console.log(leagueName);
-    console.log("hi");
+    
     try {
         // Step 1: Query the fantasy_private_leagues table to get the league_id and league_code based on leagueName
         const leagueQuery = 'SELECT league_id, league_code FROM fantasy_private_leagues WHERE league_name = $1';
@@ -180,8 +189,7 @@ export const fetchPrivateLeagueData = async (req, res) => {
             team: user.Team,
             points: user.Points,
         }));
-        console.log(league_code);
-        console.log(privateRank);
+        
         res.status(200).json({
             leagueCode: league_code,  // Include the leagueCode in the response
             privateRank: privateRank,    // Include the rankings array
