@@ -114,7 +114,8 @@ export const joinLeague = async (req, res) => {
 
 export const fetchPrivateLeagueData = async (req, res) => {
     const { leagueName } = req.body;
-
+    console.log(leagueName);
+    console.log("hi");
     try {
         // Step 1: Query the fantasy_private_leagues table to get the league_id and league_code based on leagueName
         const leagueQuery = 'SELECT league_id, league_code FROM fantasy_private_leagues WHERE league_name = $1';
@@ -176,9 +177,9 @@ export const fetchPrivateLeagueData = async (req, res) => {
 
         // Step 8: Return the users with Rank, Team, Points, and League Code
         const privateRank = usersWithPoints.map(user => ({
-            Rank: user.Rank,
-            Team: user.Team,
-            Points: user.Points,
+            rank: user.Rank,
+            team: user.Team,
+            points: user.Points,
         }));
 
         res.status(200).json({
