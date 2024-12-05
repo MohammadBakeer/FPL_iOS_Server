@@ -79,8 +79,6 @@ export const joinLeague = async (req, res) => {
         const leagueQuery = 'SELECT league_id FROM fantasy_private_leagues WHERE league_code = $1';
         const leagueResult = await db.query(leagueQuery, [league_code]);
 
-        league_code = parseInt(league_code, 10);
-
         // If no league with the given code is found
         if (leagueResult.rows.length === 0) {
             return res.status(404).json({ error: 'League not found' });
@@ -128,6 +126,8 @@ export const fetchPrivateLeagueData = async (req, res) => {
 
         const league_id = leagueResult.rows[0].league_id;
         const league_code = leagueResult.rows[0].league_code; // Get the league_code
+
+        league_code = parseInt(league_code, 10);
 
         // Step 2: Query the fantasy_league_members table to get all user_ids associated with the league_id
         const membersQuery = 'SELECT user_id FROM fantasy_league_members WHERE league_id = $1';
@@ -181,7 +181,8 @@ export const fetchPrivateLeagueData = async (req, res) => {
             team: user.Team,
             points: user.Points,
         }));
-
+        console.log(league_code);
+        console.log(privateRank);
         res.status(200).json({
             leagueCode: league_code,  // Include the leagueCode in the response
             privateRank: privateRank,    // Include the rankings array
