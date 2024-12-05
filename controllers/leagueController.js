@@ -79,6 +79,8 @@ export const joinLeague = async (req, res) => {
         const leagueQuery = 'SELECT league_id FROM fantasy_private_leagues WHERE league_code = $1';
         const leagueResult = await db.query(leagueQuery, [league_code]);
 
+        league_code = parseInt(league_code, 10);
+
         // If no league with the given code is found
         if (leagueResult.rows.length === 0) {
             return res.status(404).json({ error: 'League not found' });
@@ -111,7 +113,7 @@ export const joinLeague = async (req, res) => {
 
 
 export const fetchPrivateLeagueData = async (req, res) => {
-    const { user_id, leagueName } = req.body;
+    const { leagueName } = req.body;
 
     try {
         // Step 1: Query the fantasy_private_leagues table to get the league_id and league_code based on leagueName
